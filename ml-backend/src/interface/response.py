@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Dict
 
-class Response(BaseModel):
+class Results(BaseModel):
     serial_num: str
     cluster_num: int
