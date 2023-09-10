@@ -96,15 +96,16 @@ class EquipmentRepo implements IEquipmentRepo {
                                     '${equipment.department || ""}',
                                     '${equipment.manufacturer || ""}',
                                     '${equipment.model || ""}',
-                                    '${equipment.price || ""}',
+                                    ${equipment.price || 0},
                                     '${equipment.installation_date || ""}',
-                                    '${equipment.under_warrenty || 0},
+                                    '${equipment.under_warrenty || ""}',
                                     '${equipment.functionality || ""}',
                                     '${equipment.status || ""}',
                                     '${equipment.return_date || ""}',
                                     '${equipment.borrow_date || ""}',
-                                    ${equipment.cluster || 0}
-                                )`;
+                                    ${equipment.cluster || 0})`;
+
+            console.log(insertQuery);
     
             // Execute the insert query
             const [result] = await connection.execute(insertQuery);

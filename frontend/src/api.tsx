@@ -28,7 +28,8 @@ export async function fetchItems<T extends object[]>() {
 
 export async function addItem<T extends object>(item: T) {
     try {
-        const { data , status } = await axios.post<T>('http://localhost:8000/medical-items/add', { item });
+        console.log(item)
+        const { data , status } = await axios.post('http://localhost:8000/item/add', { data: item } );
         console.log('Add Medical Items Status: ' , status);
 
     } catch (error) {
@@ -42,7 +43,7 @@ export async function addItem<T extends object>(item: T) {
 
 export async function editItem<T extends object>(item: T) {
     try {
-        const { data , status } = await axios.post<T>('http://localhost:8000/item/edit', { item });
+        const { data , status } = await axios.post('http://localhost:8000/item/edit', { data: item });
         console.log('Edit Medical Items Status: ' , status);
 
     } catch (error) {
@@ -56,7 +57,7 @@ export async function editItem<T extends object>(item: T) {
 
 export async function deleteItem(idValue: string) {
     try {
-        const { data , status } = await axios.post('http://localhost:8000/item/delete', { serial_number: idValue } );
+        const { data , status } = await axios.post('http://localhost:8000/item/delete', { data: { serial_number: idValue } } );
         console.log('Delete Medical Items Status: ' , status);
 
     } catch (error) {

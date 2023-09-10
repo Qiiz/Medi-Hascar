@@ -1,5 +1,5 @@
 import { Box, SxProps } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MedicalItem } from '../../shared/models';
 import { addItem, createRecord, deleteItem, editItem, fetchItems } from './api';
 import DeleteDialog from './components/DeleteDialog';
@@ -21,7 +21,7 @@ const uiHeaderNames: Record<keyof MedicalItem, string> = {
     serial_number: 'S/N',
     equip_name: 'Name',
     state: 'State',
-    dateOfInstallation: 'Installation Date',
+    installation_date: 'Installation Date',
     status: 'Status',
     functionality:'Functional',
     category: 'Category',
@@ -33,7 +33,7 @@ const defaultItem: MedicalItem = {
     serial_number: '',
     equip_name: '',
     state: '',
-    dateOfInstallation: '',
+    installation_date: '',
     status: '',
     functionality:'',
     category: '',
@@ -46,7 +46,7 @@ export function createMedicalItem(data: Record<string, string>): MedicalItem {
         serial_number: data['S/N'] ?? '',
         equip_name: data['Name'] ?? '',
         state: data['State'] ?? '',
-        dateOfInstallation: data['Installation Date'] ?? '',
+        installation_date: data['Installation Date'] ?? '',
         status: data['Status'] ?? '',
         functionality: data['Functional'] ?? '',
         category: data['Category'] ?? '',
@@ -63,6 +63,7 @@ export interface MedicalItemsProps {
 }
 
 export default function MedicalItems(props: MedicalItemsProps) {
+    const [ loaded, setLoaded ] = useState(false);
     const [ open, setOpen ] = useState(false);
     const [ openEdit, setOpenEdit ] = useState(false);
     const [ openDelete, setOpenDelete ] = useState(false);
@@ -70,57 +71,63 @@ export default function MedicalItems(props: MedicalItemsProps) {
     const [ rowID, setRowID ] = useState('');
     const [ value, setValue ] = useState<Record<string, string>>(createRecord(defaultItem, uiHeaderNames));
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
         setValue(createRecord(defaultItem, uiHeaderNames));
         setOpen(true);
-    }
+    }, []);
 
-    const handleEdit = (row: Record<string, string>) => {
+    const handleEdit = useMemo(() => (row: Record<string, string>) => {
         setValue(row);
         setOpenEdit(true);
-    }
+    }, []);
 
-    const handleDelete = (rowId: string) => {
+    const handleDelete = useMemo(() => (rowId: string) => {
         console.log(rowId);
         setRowID(rowId);
         setOpenDelete(true);
-    }
+    }, []);
 
-    const handleClickClose = () => {
+    const handleClickClose = useCallback(() => {
         setOpen(false);
-    }
+    }, []);
 
-    const handleClickEditClose = () => {
+    const handleClickEditClose = useCallback(() => {
         setOpenEdit(false);
-    }
+    }, []);
 
-    const handleClickDeleteClose = () => {
+    const handleClickDeleteClose = useCallback(() => {
         setOpenDelete(false);
-    }
+    }, []);
 
-    const handleClickConfirm = async (updatedRow: Record<string, string>) => {
+    const handleClickConfirm = useMemo(() => async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
         await addItem(createMedicalItem(updatedRow));
         setOpen(false);
-    }
+        setLoaded(false);
+    }, [])
 
-    const handleClickEditConfirm = async (updatedRow: Record<string, string>) => {
+    const handleClickEditConfirm = useMemo(() => async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
         await editItem(createMedicalItem(updatedRow));
-        setOpen(false);
-    }
+        setOpenEdit(false);
+        setLoaded(false);
+    }, [])
 
-    const handleClickDeleteConfirm = async (rowId: string) => {
+    const handleClickDeleteConfirm = useMemo(() => async (rowId: string) =>  {
         console.log(rowId);
         await deleteItem(rowId);
         setOpenDelete(false);
-    }
+        setLoaded(false);
+    }, [])
 
     useEffect(() => {
-        fetchItems<MedicalItem[]>().then(result => {
-            setRows(result.map(data => createRecord(data, uiHeaderNames)));
-        });
-    }, []);
+        if (!loaded) {
+            fetchItems<MedicalItem[]>().then(result => {
+                setRows(result.map(data => createRecord(data, uiHeaderNames)));
+            });
+            setLoaded(true);
+        }
+    }, [loaded]);
 
   return (
     <>

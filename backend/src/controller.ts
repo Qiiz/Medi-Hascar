@@ -25,19 +25,20 @@ export default class Controller {
         try {
             const response = await axios.post(apiUrl, responseObj);
             // Handle the response here
-            console.log(response.data);
+            console.log("ML return value: " + response.data);
             return response.data
           } catch (error) {
             // Handle any errors here
-            console.error(error);
+            // console.error(error);
             return null
           }
 
     }
 
     async save(req: Request, res: Response) {
+        console.log(req.body.data);
         const controllerInstance = new Controller(); // Instantiate the Controller class
-        const equipmentInstance: Equipments = req.body
+        const equipmentInstance: Equipments = req.body.data;
 
         const existingEquipment = await EquipmentRepo.retrieveSingle({serial_number: equipmentInstance.serial_number}); // will return an array with one item inside.
         if (existingEquipment.length >0){
@@ -63,8 +64,7 @@ export default class Controller {
             })
             
         } catch (err) {
-            // console.log(err)
-
+            // console.log(err);
             res.status(500).send({
                 message: err
             })
@@ -103,7 +103,7 @@ export default class Controller {
     async updateItem(req: Request, res: Response){
         const controllerInstance = new Controller(); // Instantiate the Controller class
         try {
-            const updatedEquipment: Equipments = req.body
+            const updatedEquipment: Equipments = req.body.data;
             // Get the existing data
             const existingEquipment = await EquipmentRepo.retrieveSingle({serial_number: updatedEquipment.serial_number}); // will return an array with one item inside.
             // existing equipment does not exist
@@ -281,7 +281,7 @@ export default class Controller {
 
     async deleteItem(req: Request, res:Response){
         try {
-            const item = req.body
+            const item = req.body.data;
             await EquipmentRepo.deleteSingle(item.serial_number)
             res.status(200).send("Deleted Successfully.")
         } catch (error) {

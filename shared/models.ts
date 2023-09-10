@@ -2,7 +2,7 @@ export interface MedicalItem {
     serial_number: string; // Primary key
     equip_name: string;
     state: string;
-    dateOfInstallation: string;
+    installation_date: string;
     status: string;
     functionality: string;
     category: string;
