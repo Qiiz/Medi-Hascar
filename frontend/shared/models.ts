@@ -14,8 +14,8 @@ export interface Activity {
     serial_number: string; // Primary key
     state: string;
     equip_name: string;
-    'Borrow Date': string;
-    'Return Date': string;
+    borrow_date: string;
+    return_date: string;
     status: string;
 }
 

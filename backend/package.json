@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "npx tsc",
-    "start": "node build/src/index.js",
+    "start": "node build/backend/src/index.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q build/src/index.js\""
   },
   "author": "",

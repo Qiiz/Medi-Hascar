@@ -13,16 +13,17 @@ interface IEquipmentRepo {
     save(equipment: Equipments): Promise<void>;
     // select * from database with <OPTIONAL condition>
     retrieveAll(searchParams: { serial_number?: string }): Promise<Equipments[]>;
+    
     // select * from database with <OPTIONAL condition>
     retrieveSingle(searchParams: { serial_number?: string }): Promise<Equipments[]>;
 
     /* 
         Page commands
     */
+
+    deleteSingle(serial_number: String): Promise<void>;
     // update specific record 
     updateItem(oldEquipment: Equipments, newEquipment: Equipments): Promise<void>;
-    updateItemStatus(serial_number: String): Promise<void>;
-
     // get all the status
     getAllStatus(status: String): Promise<number>;
 
@@ -30,14 +31,22 @@ interface IEquipmentRepo {
 
 // data layer access for our database 
 class EquipmentRepo implements IEquipmentRepo {
-    async updateItemStatus(serial_number: String): Promise<void> {
+    async deleteSingle(serial_number: String): Promise<void> {
         const connection = await DBconnection();
-        const query = `UPDATE db.Equipments
-                        SET `
+        const query = `DELETE FROM db.Equipment WHERE serial_number = '${serial_number}';`
+
+        try {
+            await connection.execute(query)
+        } catch (err) {
+            throw err;
+        } finally{
+            connection.end()
+        }
     }
+
     async getAllStatus(status: String): Promise<number> {
         const connection = await DBconnection();
-        const query = `SELECT status FROM db.Equipments
+        const query = `SELECT status FROM db.Equipment
                         WHERE  status = '${status}'`
         try {
             const [rows] = await connection.execute(query)
@@ -54,7 +63,7 @@ class EquipmentRepo implements IEquipmentRepo {
 
     async getAllFunctionality(functionality: string): Promise<number> {
         const connection = await DBconnection();
-        const query = `SELECT functionality FROM db.Equipments WHERE functionality = '${functionality}'`;
+        const query = `SELECT functionality FROM db.Equipment WHERE functionality = '${functionality}'`;
     
         try {
             const [functionalitySize] = await connection.execute(query);
@@ -72,17 +81,31 @@ class EquipmentRepo implements IEquipmentRepo {
     async save(equipment: Equipments): Promise<void>{
         const connection = await DBconnection();
         try {
-            const insertQuery = `INSERT INTO db.Equipments (serial_number, state, equip_name, category, cost, status, functionality, under_warrenty, installation_date, cluster) 
-                                VALUES ('${equipment.serial_number}', 
-                                        '${equipment.state}',
-                                        '${equipment.equip_name}', 
-                                        '${equipment.category}', 
-                                        '${equipment.cost}', 
-                                        '${equipment.status}',
-                                        '${equipment.functionality}',
-                                        '${equipment.under_warrenty}',
-                                        '${equipment.installation_date}',
-                                        '${equipment.cluster}')`;
+            const insertQuery = `INSERT INTO db.Equipment  
+                                (state, district, facility, category, equip_name, cost, serial_number, 
+                                department, manufacturer, model, price, installation_date, under_warrenty, 
+                                warrenty_date, functionality, status, return_date, borrow_date, cluster) 
+                                VALUES (
+                                    '${equipment.state || ""}',
+                                    '${equipment.district || ""}',
+                                    '${equipment.facility || ""}',
+                                    '${equipment.category || ""}',
+                                    '${equipment.equip_name || ""}',
+                                    ${equipment.cost || 0},
+                                    '${equipment.serial_number || ""}',
+                                    '${equipment.department || ""}',
+                                    '${equipment.manufacturer || ""}',
+                                    '${equipment.model || ""}',
+                                    '${equipment.price || ""}',
+                                    '${equipment.installation_date || ""}',
+                                    ${equipment.under_warrenty || 0},
+                                    '${equipment.warrenty_date || ""}',
+                                    '${equipment.functionality || ""}',
+                                    '${equipment.status || ""}',
+                                    '${equipment.return_date || ""}',
+                                    '${equipment.borrow_date || ""}',
+                                    ${equipment.cluster || 0}
+                                )`;
     
             // Execute the insert query
             const [result] = await connection.execute(insertQuery);
@@ -94,7 +117,7 @@ class EquipmentRepo implements IEquipmentRepo {
     }
  
     async retrieveAll(searchParams: { serial_number: string; }): Promise<Equipments[]> {
-        let query: string = `SELECT * FROM db.Equipments`;
+        let query: string = `SELECT * FROM db.Equipment`;
         let condition: string = ""
         const connection = await DBconnection();
         
@@ -107,7 +130,7 @@ class EquipmentRepo implements IEquipmentRepo {
 
         try {
             const [rows] = await connection.execute(query);
-            return rows as Equipments[];
+            return rows as unknown as Equipments[];
         } catch (err) {
             throw err; // Propagate the error to the caller so that they can catch the error
         } finally {
@@ -117,7 +140,7 @@ class EquipmentRepo implements IEquipmentRepo {
 
     async retrieveSingle(searchParams: { serial_number?: string; }): Promise<Equipments[]> {
         const connection = await DBconnection();
-        const query = `SELECT * FROM db.Equipments
+        const query = `SELECT * FROM db.Equipment
                         WHERE serial_number = '${searchParams.serial_number}'`
         
         try {
@@ -134,19 +157,26 @@ class EquipmentRepo implements IEquipmentRepo {
 
     async updateItem(oldEquipment: Equipments, newEquipment: Equipments): Promise<void> {
         const connection = await DBconnection();
-        const query = `UPDATE db.Equipments
+        const query = `UPDATE db.Equipment
                         SET 
-                        category = '${newEquipment.category}',
-                        equip_name = '${newEquipment.equip_name}', 
-                        state = '${newEquipment.state}', 
-                        status = '${newEquipment.status}',
-                        cost = '${newEquipment.cost}',
-                        functionality = '${newEquipment.functionality}',
-                        under_warrenty = '${newEquipment.under_warrenty}',
-                        installation_date = '${newEquipment.installation_date}'
-                        cluster = '${newEquipment.cluster}',
-                        WHERE serial_number = '${oldEquipment.serial_number}';`
-
+                            state = '${newEquipment.state}',
+                            district = '${newEquipment.district}',
+                            facility = '${newEquipment.facility}',
+                            category = '${newEquipment.category}',
+                            equip_name = '${newEquipment.equip_name}',
+                            cost = '${newEquipment.cost}',
+                            department = '${newEquipment.department}',
+                            manufacturer = '${newEquipment.manufacturer}',
+                            model = '${newEquipment.model}',
+                            price = '${newEquipment.price}',
+                            installation_date = '${newEquipment.installation_date}',
+                            under_warrenty = '${newEquipment.under_warrenty}',
+                            warrenty_date = '${newEquipment.warrenty_date}',
+                            functionality = '${newEquipment.functionality}',
+                            status = '${newEquipment.status}',
+                            return_date = '${newEquipment.return_date}',
+                            borrow_date = '${newEquipment.borrow_date}'
+                            WHERE serial_number = '${oldEquipment.serial_number}';`
         try {
             await connection.execute(query);
         } catch (err) {
@@ -168,7 +198,7 @@ class EquipmentRepo implements IEquipmentRepo {
                         SUM(CASE WHEN functionality = 'Approved for disposal' THEN 1 ELSE 0 END) AS approve_for_disposal,
                         COUNT(*) AS totalEquipmentsCount
 
-                        FROM db.Equipments
+                        FROM db.Equipment
                         GROUP BY category;`
     
         try {

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import EquipmentRepo from "./repository.js";
 import Connection from "../db.js"
 import { Equipments } from "./model.js";
+import { MedicalItem, Activity, Forecast, Statistics } from "../../frontend/shared/models.js";
+
 import axios from 'axios';
 
 export default class Controller {
@@ -51,11 +53,10 @@ export default class Controller {
         if(mlResults != null) {
             equipmentInstance.cluster =  mlResults['cluster_num']
         }else{
-            equipmentInstance.cluster = -1
+            equipmentInstance.cluster = -1 // ML no process
         }
 
         try {
-
             await EquipmentRepo.save(equipmentInstance);
             res.status(200).send({
                 message: "Success! Saved to database."
@@ -69,7 +70,6 @@ export default class Controller {
             })
         }
     }
-    
 
     async findAll(req: Request, res: Response) {
         // ENDPOINT: api/retrieveAll or api/retrieveAll?equipment_name="ABC"
@@ -102,9 +102,8 @@ export default class Controller {
 
     async updateItem(req: Request, res: Response){
         const controllerInstance = new Controller(); // Instantiate the Controller class
-        console.log('im in update')
         try {
-            const updatedEquipment = req.body
+            const updatedEquipment: Equipments = req.body
             // Get the existing data
             const existingEquipment = await EquipmentRepo.retrieveSingle({serial_number: updatedEquipment.serial_number}); // will return an array with one item inside.
             // existing equipment does not exist
@@ -127,42 +126,22 @@ export default class Controller {
             }else{
                 updatedEquipment.cluster = -1 // nothing 
             }
+        
+            if (existingEquipment.length > 0) {
+                // Use existingEquipment's values to fill missing or empty properties in updatedEquipment
+                const existing = existingEquipment[0];
+                for (const key in existing) {
+                    if (!(key in updatedEquipment)) {
+                        updatedEquipment[key] = existing[key];
+                    }
+                }
+            }
             
             await EquipmentRepo.updateItem(existingEquipment[0], updatedEquipment)
             res.status(200).send({
                 message: "Success! Saved to database."
             });    
 
-        } catch (err) {
-            res.status(500).send({
-                message: err
-            })
-        }
-    }
-
-    async getStatistics(req:Request, res:Response){
-        try {
-            // get all availble items 
-            const totalAvailable = await EquipmentRepo.getAllStatus("Available")
-            const totalUnAvailable = await EquipmentRepo.getAllStatus("Not Available")
-
-            // calculate the overall health
-            const nonfunctionalSize = await EquipmentRepo.getAllFunctionality("Non-functional");
-            const functionalSize = await EquipmentRepo.getAllFunctionality("Functional");
-            const totalSize = nonfunctionalSize + functionalSize;
-            // calculate the healthy percentage
-            const healthyPercentage = (functionalSize / totalSize) * 100;
-
-            // Create a JSON object to hold the variables and their values
-            const responseObj = {
-                totalUnhealthy: nonfunctionalSize,
-                healthyPercentage: healthyPercentage,
-                totalUnAvailable: totalUnAvailable,
-                totalAvailable: totalAvailable,
-            };
-        
-            // send the JSON response to the frontend
-            res.status(200).json(responseObj);
         } catch (err) {
             res.status(500).send({
                 message: err
@@ -180,23 +159,28 @@ export default class Controller {
             for (const item of forecastResults) {
                 // calculate threshold  
                 var forecast = "Not Processed"
-                const threshold = (item.cluster_healthy_count/item.cluster_unhealthy_count + item.cluster_healthy_count) * 100
+                const total_size = Number(item.cluster_healthy_count) + Number(item.cluster_unhealthy_count)
+                const threshold = (Number(item.cluster_healthy_count) /total_size) * 100
+                console.log("unhealthy",  item.cluster_unhealthy_count)
+                console.log("healthy", item.cluster_healthy_count)
+                console.log("size", total_size)
                 console.log("threshold: ", threshold)
 
                 if (threshold > 70){
                     forecast = "Good"
-                }else{
+                } 
+                else if (threshold > 0 && threshold <= 70) {
                     forecast = "Bad"
                 }
 
                 const totalUnavailable = item.totalEquipmentsCount - item.available_count
 
-                const responseObj = {
+                const responseObj: Forecast = {
                     category: item.category,
                     quantity: item.totalEquipmentsCount,
-                    inuse: totalUnavailable,
-                    available: Number(item.available_count),
-                    unhealthy: Number(item.cluster_0_count), // cluster_0 is the total unhealthy equipments
+                    in_use: String(totalUnavailable),
+                    available: item.available_count,
+                    unhealthy: item.cluster_unhealthy_count, // cluster_0 is the total unhealthy equipments
                     forecast: forecast,
                 };
                 responseArray.push(responseObj);
@@ -211,4 +195,98 @@ export default class Controller {
             })
         }
     }
+
+    async getStatistics(req:Request, res:Response){
+        try {
+            // get all availble items 
+            const totalAvailable = await EquipmentRepo.getAllStatus("Active")
+            const totalUnavailable = await EquipmentRepo.getAllStatus("Inactive")
+
+            // calculate the overall health
+            const nonfunctionalSize = await EquipmentRepo.getAllFunctionality("Approved for Disposal");
+            const functionalSize = await EquipmentRepo.getAllFunctionality("Active in Use");
+            const totalSize = nonfunctionalSize + functionalSize;
+            // calculate the healthy percentage
+            const healthyPercentage = (functionalSize / totalSize) * 100;
+
+            // Create a JSON object to hold the variables and their values
+            const responseObj: Statistics  = {
+                totalUnhealthy: String(nonfunctionalSize),
+                healtyPercentage: String(healthyPercentage),
+                totalUnAvailable: String(totalUnavailable),
+                totalAvailable: String(totalAvailable)
+            };
+        
+            // send the JSON response to the frontend
+            res.status(200).json(responseObj);
+        } catch (err) {
+            res.status(500).send({
+                message: err
+            })
+        }
+    }
+
+    async getMedItems(req: Request, res:Response){
+        try {
+            const medicalItems = await EquipmentRepo.retrieveAll({serial_number: ""});
+            const responseArray = []
+
+            for (const item of medicalItems){
+                const responseObj: MedicalItem = {
+                    serial_number: item.serial_number,
+                    equip_name: item.equip_name,
+                    state: item.state,
+                    dateOfInstallation: item.installation_date,
+                    status: item.status,
+                    functionality: item.functionality,
+                    category: item.category,
+                    cost: item.cost,
+                    under_warrenty: item.under_warrenty
+                }
+                responseArray.push(responseObj)   
+            }
+            res.status(200).json(responseArray)
+        } catch (error) {
+            res.status(500).send({
+                message: error
+            })
+        }
+    }
+
+    async getActivities(req: Request, res:Response){
+        try {
+            const activityItems = await EquipmentRepo.retrieveAll({serial_number: ""});
+            const responseArray = []
+
+            for (const item of activityItems){
+                const responseObj: Activity ={
+                    serial_number: item.serial_number,
+                    state: item.state,
+                    equip_name: item.equip_name,
+                    borrow_date: item.borrow_date,
+                    return_date: item.borrow_date,
+                    status: item.status
+                }
+                responseArray.push(responseObj)
+            }
+            res.status(200).json(responseArray)
+        } catch (error) {
+            res.status(500).send({
+                message: error
+            })
+        }
+    }
+
+    async deleteItem(req: Request, res:Response){
+        try {
+            const item = req.body
+            await EquipmentRepo.deleteSingle(item.serial_number)
+            res.status(200).send("Deleted Successfully.")
+        } catch (error) {
+            res.status(500).send({
+                message: error
+            })
+        }
+    }
+
 }
