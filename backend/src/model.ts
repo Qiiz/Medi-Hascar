@@ -11,4 +11,7 @@ export interface Equipments extends RowDataPacket {
     status: string;
     functionality: string;
     under_warrenty: boolean;
+    cluster: number;
+    installation_date: string;
 }
+

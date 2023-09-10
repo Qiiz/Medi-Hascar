@@ -36,6 +36,7 @@ export default class Controller {
     async save(req: Request, res: Response) {
         const controllerInstance = new Controller(); // Instantiate the Controller class
         const equipmentInstance: Equipments = req.body
+
         const existingEquipment = await EquipmentRepo.retrieveSingle({serial_number: equipmentInstance.serial_number}); // will return an array with one item inside.
         if (existingEquipment.length >0){
             res.status(500).send("Item already exist in database!")
@@ -60,7 +61,6 @@ export default class Controller {
                 message: "Success! Saved to database."
             })
             
-            
         } catch (err) {
             // console.log(err)
 
@@ -69,6 +69,7 @@ export default class Controller {
             })
         }
     }
+    
 
     async findAll(req: Request, res: Response) {
         // ENDPOINT: api/retrieveAll or api/retrieveAll?equipment_name="ABC"

@@ -21,6 +21,8 @@ interface IEquipmentRepo {
     */
     // update specific record 
     updateItem(oldEquipment: Equipments, newEquipment: Equipments): Promise<void>;
+    updateItemStatus(serial_number: String): Promise<void>;
+
     // get all the status
     getAllStatus(status: String): Promise<number>;
 
@@ -28,6 +30,11 @@ interface IEquipmentRepo {
 
 // data layer access for our database 
 class EquipmentRepo implements IEquipmentRepo {
+    async updateItemStatus(serial_number: String): Promise<void> {
+        const connection = await DBconnection();
+        const query = `UPDATE db.Equipments
+                        SET `
+    }
     async getAllStatus(status: String): Promise<number> {
         const connection = await DBconnection();
         const query = `SELECT status FROM db.Equipments
@@ -65,7 +72,7 @@ class EquipmentRepo implements IEquipmentRepo {
     async save(equipment: Equipments): Promise<void>{
         const connection = await DBconnection();
         try {
-            const insertQuery = `INSERT INTO db.Equipments (serial_number, state, equip_name, category, cost, status, functionality, under_warrenty) 
+            const insertQuery = `INSERT INTO db.Equipments (serial_number, state, equip_name, category, cost, status, functionality, under_warrenty, installation_date, cluster) 
                                 VALUES ('${equipment.serial_number}', 
                                         '${equipment.state}',
                                         '${equipment.equip_name}', 
@@ -73,7 +80,9 @@ class EquipmentRepo implements IEquipmentRepo {
                                         '${equipment.cost}', 
                                         '${equipment.status}',
                                         '${equipment.functionality}',
-                                        '${equipment.under_warrenty}')`;
+                                        '${equipment.under_warrenty}',
+                                        '${equipment.installation_date}',
+                                        '${equipment.cluster}')`;
     
             // Execute the insert query
             const [result] = await connection.execute(insertQuery);
@@ -133,10 +142,11 @@ class EquipmentRepo implements IEquipmentRepo {
                         status = '${newEquipment.status}',
                         cost = '${newEquipment.cost}',
                         functionality = '${newEquipment.functionality}',
-                        under_warrenty = '${newEquipment.under_warrenty}'
+                        under_warrenty = '${newEquipment.under_warrenty}',
+                        installation_date = '${newEquipment.installation_date}'
+                        cluster = '${newEquipment.cluster}',
                         WHERE serial_number = '${oldEquipment.serial_number}';`
 
-    
         try {
             await connection.execute(query);
         } catch (err) {
@@ -146,8 +156,29 @@ class EquipmentRepo implements IEquipmentRepo {
             connection.end();
         }
     }
-    retrieveMedicalItems(Params: { page: number; limit: number; }): Promise<void> {
-        throw new Error('Method not implemented.');
+
+    async getForecast(){
+        const connection = await DBconnection();
+        const query = `SELECT category,
+                        SUM(CASE WHEN cluster = 3 THEN 1 ELSE 0 END) AS cluster_unhealthy_count,
+                        SUM(CASE WHEN cluster = 2 OR cluster = 1 THEN 1 ELSE 0 END) AS cluster_healthy_count,
+                        SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) AS available_count,
+                        SUM(CASE WHEN functionality = 'Active/in use' THEN 1 ELSE 0 END) AS inuse_count,
+                        SUM(CASE WHEN functionality = 'Not in use' THEN 1 ELSE 0 END) AS notinuse_count,
+                        SUM(CASE WHEN functionality = 'Approved for disposal' THEN 1 ELSE 0 END) AS approve_for_disposal,
+                        COUNT(*) AS totalEquipmentsCount
+
+                        FROM db.Equipments
+                        GROUP BY category;`
+    
+        try {
+            const [clusterResult] = await connection.execute(query)
+            return clusterResult
+        } catch (err) {
+            throw err;
+        } finally {
+            connection.end();
+        }
     }
 }
 

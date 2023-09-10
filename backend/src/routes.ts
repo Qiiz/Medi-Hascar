@@ -19,6 +19,7 @@ class Routes {
     this.router.post('/activities/save', this.controller.save)
     this.router.put('/activities/edit', this.controller.updateItem)
     this.router.get('/medical-items', this.controller.findAll)
+    this.router.get('/forecast', this.controller.getForecast)
 
   }
 }
