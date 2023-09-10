@@ -7,7 +7,7 @@ import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
 import ItemDialog from './components/common/ItemDialog';
 import DeleteDialog from './components/DeleteDialog';
-import { fetchItems, addItem, deleteItem, editItem, createRecord } from './api';
+import { addItem, deleteItem, editItem, createRecord, fetchActivities } from './api';
 import { Activity } from '../../shared/models';
 
 const uiHeaderNames: Record<keyof Activity, string> = {
@@ -23,8 +23,8 @@ const headers = [
     'S/N',
     'Name',
     'State',
-    'Date Borrowed',
-    'Date Returned',
+    'Borrow Date',
+    'Return Date',
     'Status'
 ]
 
@@ -37,20 +37,15 @@ const defaultItem: Activity = {
     status: ''
 };
 
-export function createActivityItem(data?: Record<string, string>): Activity {
+export function createActivityItem(data: Record<string, string>): Activity {
     const result: Activity = {
-        serial_number: '',
-        state: '',
-        equip_name: '',
-        borrow_date: '',
-        return_date: '',
-        status: ''
+        serial_number: data['S/N'] ?? '',
+        equip_name: data['Name'] ?? '',
+        state: data['State'] ?? '',
+        borrow_date: data['Borrow Date'] ?? '',
+        return_date: data['Return Date'] ?? '',
+        status: data['Status'] ?? '',
     }
-
-    if (!data) {
-        return result;
-    }
-    
     return result;
 }
 
@@ -120,7 +115,8 @@ export default function Activities(props: ActivitiesProps) {
 
     useEffect(() => {
         if (!loaded) {
-            fetchItems<Activity[]>().then(result => {
+            fetchActivities().then(result => {
+                console.log(result);
                 setRows(result.map(data => createRecord(data, uiHeaderNames)));
             });
             setLoaded(true);

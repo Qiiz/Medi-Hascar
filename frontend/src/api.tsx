@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Forecast, Statistics } from '../../shared/models';
+import { Activity, Forecast, MedicalItem, Statistics } from '../../shared/models';
 
 export function createRecord<T extends object>(data: T, prettyPropNames: Record<keyof T, string>) {
     const result: Record<string, string> = {};
@@ -11,9 +11,9 @@ export function createRecord<T extends object>(data: T, prettyPropNames: Record<
     return result;
 }
 
-export async function fetchItems<T extends object[]>() {
+export async function fetchMedicalItems() {
     try {
-        const { data, status } = await axios.get<T>('http://localhost:8000/medical-items');
+        const { data, status } = await axios.get<MedicalItem[]>('http://localhost:8000/medical-items');
         console.log('Fetch Medical Items Status: ' , status);
         return data;
     } catch (error) {
@@ -24,6 +24,21 @@ export async function fetchItems<T extends object[]>() {
         }
         return [];
     }
+}
+
+export async function fetchActivities() {
+  try {
+      const { data, status } = await axios.get<Activity[]>('http://localhost:8000/activities');
+      console.log('Fetch Activities Status: ' , status);
+      return data;
+  } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log('error message: ', error.message);
+      } else {
+        console.log('unexpected error: ', error);
+      }
+      return [];
+  }
 }
 
 export async function addItem<T extends object>(item: T) {

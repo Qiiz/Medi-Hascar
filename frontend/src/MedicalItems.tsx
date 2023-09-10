@@ -1,7 +1,7 @@
 import { Box, SxProps } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MedicalItem } from '../../shared/models';
-import { addItem, createRecord, deleteItem, editItem, fetchItems } from './api';
+import { addItem, createRecord, deleteItem, editItem, fetchMedicalItems } from './api';
 import DeleteDialog from './components/DeleteDialog';
 import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
@@ -122,7 +122,7 @@ export default function MedicalItems(props: MedicalItemsProps) {
 
     useEffect(() => {
         if (!loaded) {
-            fetchItems<MedicalItem[]>().then(result => {
+            fetchMedicalItems().then(result => {
                 setRows(result.map(data => createRecord(data, uiHeaderNames)));
             });
             setLoaded(true);
