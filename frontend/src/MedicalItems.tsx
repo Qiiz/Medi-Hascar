@@ -5,6 +5,7 @@ import {
 import Header from './components/common/Header';
 import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
+import ItemDialog from './components/common/ItemDialog';
 import { pageStyle } from './styles';
 
 const dataRows = [
@@ -78,6 +79,16 @@ export default function MedicalItems() {
         setOpenDelete(true);
     }
 
+    const handleClickClose = () => {
+        setOpen(false);
+    }
+
+    const handleClickConfirm = (updatedRow: Record<string, string>) => {
+        console.log(updatedRow);
+        setOpen(false);
+    }
+
+
   return (
     <Box sx={pageStyle}>
         <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -91,6 +102,13 @@ export default function MedicalItems() {
             isCollapsible={true}
             onEditRow={handleEdit}
             onDeleteRow={handleDelete}
+        />
+        <ItemDialog
+            open={open}
+            title="TITLE"
+            value={value}
+            onClose={handleClickClose}
+            onConfirm={handleClickConfirm}
         />
     </Box>   
   );
