@@ -11,8 +11,15 @@
 # production
 /build
 
+# machine learning
+__pycache__
+*.pkl
+*.joblib
+app_config.yml
+
 # misc
 .DS_Store
+.env
 .env.local
 .env.development.local
 .env.test.local
