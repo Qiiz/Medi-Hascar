@@ -1,4 +1,5 @@
 import json
+import yaml
 import joblib
 import numpy as np
 from fastapi import HTTPException
@@ -9,6 +10,16 @@ from datetime import date
 
 
 class Predict:
+
+    def __init__(self, cfg_filepath):
+        self._cfg = None
+
+        with open(cfg_filepath, "r") as ymlfile:
+            self._cfg = yaml.safe_load(ymlfile)
+
+            self.scaler_mod = self._cfg['category-enc']['pkl_path']
+            self.pca_mod = self._cfg['dimensionality-reduction']['pkl_path']
+            self.kmeans_mod = self._cfg['k_means-clustering']['joblib_path']
 
     def process(self, payload: Payload):
        if payload is None:
@@ -37,17 +48,17 @@ class Predict:
        return self.run_standard_scaling([date.today().year - date_ , cost])
 
     def run_standard_scaling(self, numerics: list):
-        loaded_scaler = joblib.load("scaler.pkl")
+        loaded_scaler = joblib.load(self.scaler_mod)
         scaled_new_data = loaded_scaler.transform(np.array([numerics]))[0]  # Replace 'new_data' with your new data
         return scaled_new_data[0] , scaled_new_data[1]
     
     def run_pca(self, data):
-        pca_reload = joblib.load(open("pca_model.pkl",'rb'))
+        pca_reload = joblib.load(open(self.pca_mod,'rb'))
         result = pca_reload.transform(np.array([data]))
         return result
     
     def run_kmeans(self, dim_data):
-        loaded_kmeans = joblib.load('kmeans_model.joblib')
+        loaded_kmeans = joblib.load(self.kmeans_mod)
         cluster_res = loaded_kmeans.predict(dim_data)[0]
         return cluster_res
     
