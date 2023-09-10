@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import EquipmentRepo from "./repository.js";
 import Connection from "../db.js"
 import { Equipments } from "./model.js";
-import { MedicalItem, Activity, Forecast, Statistics } from "../../frontend/shared/models.js";
+import { MedicalItem, Activity, Forecast, Statistics } from "../../shared/models.js";
 
 import axios from 'axios';
 
@@ -199,20 +199,22 @@ export default class Controller {
     async getStatistics(req:Request, res:Response){
         try {
             // get all availble items 
-            const totalAvailable = await EquipmentRepo.getAllStatus("Active")
-            const totalUnavailable = await EquipmentRepo.getAllStatus("Inactive")
+            const totalAvailable = await EquipmentRepo.getAllStatus("Available")
+            const totalUnavailable = await EquipmentRepo.getAllStatus("Not Available")
 
             // calculate the overall health
             const nonfunctionalSize = await EquipmentRepo.getAllFunctionality("Approved for Disposal");
-            const functionalSize = await EquipmentRepo.getAllFunctionality("Active in Use");
+            const functionalSize = 0
+                + await EquipmentRepo.getAllFunctionality("Active/in Use")
+                + await EquipmentRepo.getAllFunctionality("Not in Use");
             const totalSize = nonfunctionalSize + functionalSize;
             // calculate the healthy percentage
-            const healthyPercentage = (functionalSize / totalSize) * 100;
+            const healthyPercentage = ((functionalSize / totalSize) * 100).toFixed(2);
 
             // Create a JSON object to hold the variables and their values
             const responseObj: Statistics  = {
                 totalUnhealthy: String(nonfunctionalSize),
-                healtyPercentage: String(healthyPercentage),
+                healthyPercentage: String(healthyPercentage),
                 totalUnAvailable: String(totalUnavailable),
                 totalAvailable: String(totalAvailable)
             };
@@ -236,7 +238,7 @@ export default class Controller {
                     serial_number: item.serial_number,
                     equip_name: item.equip_name,
                     state: item.state,
-                    dateOfInstallation: item.installation_date,
+                    installation_date: item.installation_date,
                     status: item.status,
                     functionality: item.functionality,
                     category: item.category,
