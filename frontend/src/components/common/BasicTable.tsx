@@ -73,7 +73,7 @@ export default function BasicTable( props: BasicTableProps ) {
                 <TableHead>
                     <TableRow>
                         {props.headers.map((header) => (
-                            <TableCell align='left' sx={{ fontWeight: 'bold' }}>
+                            <TableCell key={header} align='left' sx={{ fontWeight: 'bold' }}>
                                 {header}
                             </TableCell>
                         ))}
@@ -86,6 +86,7 @@ export default function BasicTable( props: BasicTableProps ) {
                     {(rowsPerPage > 0 ? props.rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : props.rows)
                         .map((row) => (
                             <Row
+                                key={row[props.headers[0] ?? '']}
                                 id={row[props.headers[0] ?? '']}
                                 isEditable={props.isEditable}
                                 isCollapsible={props.isCollapsible}

@@ -1,12 +1,9 @@
-import { 
-    Typography
-} from '@mui/material';
+import { SxProps, Typography } from '@mui/material';
 
-export default function Header(props: {title: string}) {
-return (
-    <Typography sx={{ fontSize: 36, fontWeight: 550, color:'#3E6BF7'}} >
-    {props.title}
-    </Typography>
-);
+export default function Header(props: {title: string, sx?: SxProps}) {
+    return (
+        <Typography sx={props.sx}>
+            {props.title}
+        </Typography>
+    );
 }
-  

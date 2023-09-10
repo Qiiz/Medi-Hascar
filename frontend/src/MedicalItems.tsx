@@ -1,77 +1,83 @@
-import { useState } from 'react';
-import { 
-    Box,
-  } from '@mui/material';
-import Header from './components/common/Header';
+import { Box, SxProps } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { MedicalItem } from '../../shared/models';
+import { addItem, createRecord, deleteItem, editItem, fetchItems } from './api';
+import DeleteDialog from './components/DeleteDialog';
 import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
+import Header from './components/common/Header';
 import ItemDialog from './components/common/ItemDialog';
-import DeleteDialog from './components/DeleteDialog';
-import { pageStyle } from './styles';
 
-const dataRows = [
-    {
-        'ID': 'tree',
-        'Category': 'Medical',
-        '1': 'Medical',
-        '2': 'Medical',
-        '3': 'Medical',
-        '4': 'Medical',
-        '5': 'Medical',
-    },
-    {
-        'ID': 'daflkjgadjsglkjslkgjl',
-        'Category': 'Medical',
-        '1': 'Medical',
-        '2': 'Medical',
-        '3': 'Medical',
-        '4': 'Medical',
-        '5': 'Medical',
-    }
-
-]
-
-const dataHeaders:string[] = [
-    'ID',
+const visibleHeaders = [
     'S/N',
     'Name',
     'State',
     'Installation Date',
     'Status',
-    'Functional',
-    'Category',
-    'Cost',
-    'Under Warranty'
+    'Functional'
 ]
 
-const defaultItem: Record<string, string> = {
-    'S/N': 'goat',
-    'Name': 'goat',
-    'State': 'goat',
-    'Installation Date': 'goat',
-    'Status': 'goat',
-    'Functional': 'goat',
-    'Category': 'goat',
-    'Cost': 'goat',
-    'Under Warranty': 'goat',
+const uiHeaderNames: Record<keyof MedicalItem, string> = {
+    serial_number: 'S/N',
+    equip_name: 'Name',
+    state: 'State',
+    dateOfInstallation: 'Installation Date',
+    status: 'Status',
+    functionality:'Functional',
+    category: 'Category',
+    cost: 'Cost',
+    under_warrenty: 'Under Warranty'
+}
+
+const defaultItem: MedicalItem = {
+    serial_number: '',
+    equip_name: '',
+    state: '',
+    dateOfInstallation: '',
+    status: '',
+    functionality:'',
+    category: '',
+    cost: 0,
+    under_warrenty: false
 };
 
+export function createMedicalItem(data: Record<string, string>): MedicalItem {
+    const result: MedicalItem = {
+        serial_number: data['S/N'] ?? '',
+        equip_name: data['Name'] ?? '',
+        state: data['State'] ?? '',
+        dateOfInstallation: data['Installation Date'] ?? '',
+        status: data['Status'] ?? '',
+        functionality: data['Functional'] ?? '',
+        category: data['Category'] ?? '',
+        cost: parseInt(data['Cost'], 0),
+        under_warrenty: data['Under Warranty'] === 'true',
+    }
+    return result;
+}
 
+export interface MedicalItemsProps {
+    headerStyle: SxProps,
+    isEditable?: boolean,
+    isCollapsible?: boolean
+}
 
-export default function MedicalItems() {
+export default function MedicalItems(props: MedicalItemsProps) {
     const [ open, setOpen ] = useState(false);
+    const [ openEdit, setOpenEdit ] = useState(false);
     const [ openDelete, setOpenDelete ] = useState(false);
+    const [ rows, setRows ] = useState<Record<string, string>[]>([]);
     const [ rowID, setRowID ] = useState('');
-    const [ value, setValue ] = useState<Record<string, string>>(defaultItem);
+    const [ value, setValue ] = useState<Record<string, string>>(createRecord(defaultItem, uiHeaderNames));
 
     const handleAdd = () => {
-        setValue(defaultItem);
+        setValue(createRecord(defaultItem, uiHeaderNames));
         setOpen(true);
     }
 
     const handleEdit = (row: Record<string, string>) => {
         setValue(row);
-        setOpen(true);
+        setOpenEdit(true);
     }
 
     const handleDelete = (rowId: string) => {
@@ -84,41 +90,65 @@ export default function MedicalItems() {
         setOpen(false);
     }
 
+    const handleClickEditClose = () => {
+        setOpenEdit(false);
+    }
+
     const handleClickDeleteClose = () => {
         setOpenDelete(false);
     }
 
-    const handleClickConfirm = (updatedRow: Record<string, string>) => {
+    const handleClickConfirm = async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
+        await addItem(createMedicalItem(updatedRow));
         setOpen(false);
     }
 
-    const handleClickDeleteConfirm = (rowId: string) => {
+    const handleClickEditConfirm = async (updatedRow: Record<string, string>) => {
+        console.log(updatedRow);
+        await editItem(createMedicalItem(updatedRow));
+        setOpen(false);
+    }
+
+    const handleClickDeleteConfirm = async (rowId: string) => {
         console.log(rowId);
+        await deleteItem(rowId);
         setOpenDelete(false);
     }
 
+    useEffect(() => {
+        fetchItems<MedicalItem[]>().then(result => {
+            setRows(result.map(data => createRecord(data, uiHeaderNames)));
+        });
+    }, []);
 
   return (
-    <Box sx={pageStyle}>
+    <>
         <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Header title='Medical Items'/>
-            <AddButton onClick={handleAdd}/>
+            <Header title='Medical Items' sx={props.headerStyle}/>
+            {props.isEditable && <AddButton onClick={handleAdd}/>}
         </Box>
         <BasicTable
-            headers={dataHeaders}
-            rows={dataRows}
-            isEditable={true}
-            isCollapsible={true}
+            headers={visibleHeaders}
+            rows={rows}
+            isEditable={props.isEditable ?? false}
+            isCollapsible={props.isCollapsible ?? false}
             onEditRow={handleEdit}
             onDeleteRow={handleDelete}
         />
         <ItemDialog
             open={open}
-            title="TITLE"
+            title="Add a new Medical Item"
             value={value}
             onClose={handleClickClose}
             onConfirm={handleClickConfirm}
+        />
+        <ItemDialog
+            open={openEdit}
+            title="Edit a Medical Item"
+            value={value}
+            onClose={handleClickEditClose}
+            onConfirm={handleClickEditConfirm}
         />
         <DeleteDialog 
             open={openDelete}
@@ -126,6 +156,6 @@ export default function MedicalItems() {
             onClose={handleClickDeleteClose}
             onDelete={handleClickDeleteConfirm}
         />
-    </Box>   
+    </>   
   );
 }

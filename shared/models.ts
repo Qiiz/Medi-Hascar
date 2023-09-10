@@ -30,7 +30,7 @@ export interface Forecast {
 
 export interface Statistics {
     totalUnhealthy: string;
-    healtyPercentage: string;
+    healthyPercentage: string;
     totalUnAvailable: string;
     totalAvailable: string;
 }

@@ -1,15 +1,15 @@
-import { 
-    Box,
-  } from '@mui/material';
+import Forecasts from './Forecasts';
+import MedicalItems from './MedicalItems';
 import TopBar from './components/TopBar';
-import { pageStyle } from './styles';
-
+import { headerStyle2 } from './styles';
 
 export default function Main() {
 
   return (
-    <Box sx={pageStyle}>
+    <>
        <TopBar />
-    </Box>  
+       <MedicalItems headerStyle={headerStyle2}/>
+       <Forecasts headerStyle={headerStyle2}/>
+    </>  
   );
 }

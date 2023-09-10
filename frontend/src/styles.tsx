@@ -52,3 +52,6 @@ export const tableCardStyle = {
         fontSize: 14
     }
 }
+
+export const headerStyle1 = { fontSize: 36, fontWeight: 550, color:'#3E6BF7'}
+export const headerStyle2 = { fontSize: 18, fontWeight: 500, color:'#3E6BF7', marginTop: '20px'}
