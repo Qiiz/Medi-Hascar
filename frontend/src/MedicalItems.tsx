@@ -6,6 +6,7 @@ import Header from './components/common/Header';
 import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
 import ItemDialog from './components/common/ItemDialog';
+import DeleteDialog from './components/DeleteDialog';
 import { pageStyle } from './styles';
 
 const dataRows = [
@@ -83,9 +84,18 @@ export default function MedicalItems() {
         setOpen(false);
     }
 
+    const handleClickDeleteClose = () => {
+        setOpenDelete(false);
+    }
+
     const handleClickConfirm = (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
         setOpen(false);
+    }
+
+    const handleClickDeleteConfirm = (rowId: string) => {
+        console.log(rowId);
+        setOpenDelete(false);
     }
 
 
@@ -109,6 +119,12 @@ export default function MedicalItems() {
             value={value}
             onClose={handleClickClose}
             onConfirm={handleClickConfirm}
+        />
+        <DeleteDialog 
+            open={openDelete}
+            rowId={rowID}
+            onClose={handleClickDeleteClose}
+            onDelete={handleClickDeleteConfirm}
         />
     </Box>   
   );
