@@ -1,5 +1,6 @@
 # Medi-Hackathon
 
+# Do the following steps to run our program!
 ## How to run frontend
 - cd frontend
 - npm i
@@ -10,6 +11,12 @@
 - npm i
 - npm run build
 - npm start
+
+## How to run ML-backend
+- cd ml-backend
+- pip install - r requirements.txt
+- python3 ./main.py
+
 
 ### Authors
 | **Author**    | **Username** |
