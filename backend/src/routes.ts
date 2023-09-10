@@ -16,9 +16,13 @@ class Routes {
 
     // endpoints
     this.router.get('/statistics', this.controller.getStatistics)
-    this.router.post('/activities/save', this.controller.save)
-    this.router.put('/activities/edit', this.controller.updateItem)
-    this.router.get('/medical-items', this.controller.findAll)
+    this.router.get('/medical-items', this.controller.getMedItems)
+    this.router.get('/activities', this.controller.getActivities)
+
+    // CRUD operations
+    this.router.post('/item/edit', this.controller.updateItem)
+    this.router.post('/item/add', this.controller.save)
+    this.router.post('/item/delete', this.controller.deleteItem)
     this.router.get('/forecast', this.controller.getForecast)
 
   }
