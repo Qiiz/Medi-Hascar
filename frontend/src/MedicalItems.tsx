@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { 
     Box,
   } from '@mui/material';
@@ -8,6 +8,8 @@ import BasicTable from './components/common/BasicTable';
 import ItemDialog from './components/common/ItemDialog';
 import DeleteDialog from './components/DeleteDialog';
 import { pageStyle } from './styles';
+import { createRecord, fetchMedicalItems, addMedicalItem, deleteMedicalItem, createMedicalItem } from './api';
+import { MedicalItem } from '../shared/models';
 
 const dataRows = [
     {
@@ -61,6 +63,7 @@ const defaultItem: Record<string, string> = {
 export default function MedicalItems() {
     const [ open, setOpen ] = useState(false);
     const [ openDelete, setOpenDelete ] = useState(false);
+    const [ rows, setRows ] = useState<Record<string, string>[]>([]);
     const [ rowID, setRowID ] = useState('');
     const [ value, setValue ] = useState<Record<string, string>>(defaultItem);
 
@@ -88,16 +91,23 @@ export default function MedicalItems() {
         setOpenDelete(false);
     }
 
-    const handleClickConfirm = (updatedRow: Record<string, string>) => {
+    const handleClickConfirm = async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
+        await addMedicalItem(createMedicalItem(updatedRow));
         setOpen(false);
     }
 
-    const handleClickDeleteConfirm = (rowId: string) => {
+    const handleClickDeleteConfirm = async (rowId: string) => {
         console.log(rowId);
+        await deleteMedicalItem(rowId);
         setOpenDelete(false);
     }
 
+    useEffect(() => {
+        fetchMedicalItems().then(result => {
+            setRows(result.map(createRecord));
+        });
+    }, []);
 
   return (
     <Box sx={pageStyle}>
@@ -107,7 +117,7 @@ export default function MedicalItems() {
         </Box>
         <BasicTable
             headers={dataHeaders}
-            rows={dataRows}
+            rows={rows}
             isEditable={true}
             isCollapsible={true}
             onEditRow={handleEdit}
