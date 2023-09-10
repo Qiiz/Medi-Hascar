@@ -7,4 +7,8 @@ export interface Equipments extends RowDataPacket {
     equip_name: string;
     category: string;
     cost: number;
+
+    status: string;
+    functionality: string;
+    under_warrenty: boolean;
 }

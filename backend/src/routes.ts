@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import Controller from './controller.js';
 
 class Routes {
@@ -15,11 +15,12 @@ class Routes {
     this.router.get('/test_db', this.controller.testDBConnection);    
 
     // endpoints
-    // this.router.get('/stats', )
-    // this.router.post('/activities', ) // save? edit
-    // this.router.put('/activities', )
-    // this.router.get('/medical-items', )
-    
+    this.router.get('/statistics', this.controller.getStatistics)
+    this.router.post('/activities/save', this.controller.save)
+    this.router.put('/activities/edit', this.controller.updateItem)
+    this.router.get('/medical-items', this.controller.findAll)
+
   }
 }
+
 export default new Routes().router;
