@@ -266,7 +266,7 @@ export default class Controller {
                     state: item.state,
                     equip_name: item.equip_name,
                     borrow_date: item.borrow_date,
-                    return_date: item.borrow_date,
+                    return_date: item.return_date,
                     status: item.status
                 }
                 responseArray.push(responseObj)
