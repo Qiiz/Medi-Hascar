@@ -11,6 +11,7 @@ import {
     Paper
 } from '@mui/material';
 import Row from './Row';
+import React from 'react';
 
 
 const getVisibleData = (row: Record<string, string>, headers: string[]) => {
@@ -38,7 +39,7 @@ interface BasicTableProps {
     onDeleteRow?: (rowId: string) => void;
 }
 
-export default function BasicTable( props: BasicTableProps ) {
+const BasicTable = ( props: BasicTableProps ) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -120,3 +121,5 @@ export default function BasicTable( props: BasicTableProps ) {
         </TableContainer>
     );
 }
+
+export default React.memo(BasicTable);

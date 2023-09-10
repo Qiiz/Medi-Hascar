@@ -18,12 +18,12 @@ const headers = [
 ]
 
 const uiHeaderNames: Record<keyof Forecast, string> = {
-  category: '', // Primary key
-  quantity: '',
-  in_use: '',
-  available: '',
-  unhealthy: '',
-  forecast: ''
+  category: 'Category', // Primary key
+  quantity: 'Quantity',
+  in_use: 'In Use',
+  available: 'Available',
+  unhealthy: 'Unhealthy',
+  forecast: 'Forecast'
 }
 
 export interface ForecastsProps {

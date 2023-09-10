@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     Box, SxProps,
   } from '@mui/material';
@@ -61,6 +61,7 @@ export interface ActivitiesProps {
 }
 
 export default function Activities(props: ActivitiesProps) {
+    const [ loaded, setLoaded ] = useState(false);
     const [ open, setOpen ] = useState(false);
     const [ openEdit, setOpenEdit ] = useState(false);
     const [ openDelete, setOpenDelete ] = useState(false);
@@ -68,57 +69,63 @@ export default function Activities(props: ActivitiesProps) {
     const [ rowID, setRowID ] = useState('');
     const [ value, setValue ] = useState<Record<string, string>>(createRecord(defaultItem, uiHeaderNames));
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
         setValue(createRecord(defaultItem, uiHeaderNames));
         setOpen(true);
-    }
+    }, [])
 
-    const handleEdit = (row: Record<string, string>) => {
+    const handleEdit = useMemo(() => (row: Record<string, string>) => {
         setValue(row);
         setOpenEdit(true);
-    }
+    }, []);
 
-    const handleDelete = (rowId: string) => {
+    const handleDelete = useMemo(() => (rowId: string) => {
         console.log(rowId);
         setRowID(rowId);
         setOpenDelete(true);
-    }
+    }, []);
 
-    const handleClickClose = () => {
+    const handleClickClose = useCallback(() => {
         setOpen(false);
-    }
+    }, []);
 
-    const handleClickEditClose = () => {
+    const handleClickEditClose = useCallback(() => {
         setOpenEdit(false);
-    }
+    }, []);
 
-    const handleClickDeleteClose = () => {
+    const handleClickDeleteClose = useCallback(() => {
         setOpenDelete(false);
-    }
+    }, []);
 
-    const handleClickConfirm = async (updatedRow: Record<string, string>) => {
+    const handleClickConfirm = useMemo(() => async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
         await addItem(createActivityItem(updatedRow));
         setOpen(false);
-    }
+        setLoaded(false);
+    }, []);
 
-    const handleClickEditConfirm = async (updatedRow: Record<string, string>) => {
+    const handleClickEditConfirm = useMemo(() => async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
         await editItem(createActivityItem(updatedRow));
         setOpenEdit(false);
-    }
+        setLoaded(false);
+    }, []);
 
-    const handleClickDeleteConfirm = async (rowId: string) => {
+    const handleClickDeleteConfirm = useMemo(() => async (rowId: string) => {
         console.log(rowId);
         await deleteItem(rowId);
         setOpenDelete(false);
-    }
+        setLoaded(false);
+    }, []);
 
     useEffect(() => {
-        fetchItems<Activity[]>().then(result => {
-            setRows(result.map(data => createRecord(data, uiHeaderNames)));
-        });
-    }, []);
+        if (!loaded) {
+            fetchItems<Activity[]>().then(result => {
+                setRows(result.map(data => createRecord(data, uiHeaderNames)));
+            });
+            setLoaded(true);
+        }
+    }, [loaded]);
 
   return (
     <>

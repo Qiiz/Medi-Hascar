@@ -73,6 +73,7 @@ export async function fetchForecast(): Promise<Forecast[]> {
     try {
         const { data, status } = await axios.get<Forecast[]>('http://localhost:8000/forecast');
         console.log('Fetch Forecast Status: ' , status);
+        console.log(data);
 
         return data;
     } catch (error) {
