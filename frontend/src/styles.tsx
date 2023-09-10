@@ -17,3 +17,23 @@ export const pageStyle: SxProps = {
   marginLeft: sidebarWidth,
   padding: '8px 10px'
 };
+
+
+export const mainCardStyle = {
+    card: {
+        width: 'auto',
+        margin: '0px 8px',
+        borderRadius: '5px',
+    },
+    font1: {
+        fontSize: 16, 
+        fontWeight: 500, 
+        color:'#3E6BF7',
+    },
+    font2: {
+        fontSize: 36, 
+        fontWeight: 700, 
+        textAlign: 'center', 
+        m: 2,
+    }
+  }

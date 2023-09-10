@@ -1,7 +1,7 @@
 import { 
     Box,
   } from '@mui/material';
-import Header from './components/common/Header';
+import TopBar from './components/TopBar';
 import { pageStyle } from './styles';
 
 
@@ -9,7 +9,7 @@ export default function Main() {
 
   return (
     <Box sx={pageStyle}>
-        <Header title='Main'/>
+       <TopBar />
     </Box>  
   );
 }
