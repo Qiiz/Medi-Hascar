@@ -3,6 +3,7 @@ import {
     Box,
   } from '@mui/material';
 import Header from './components/common/Header';
+import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
 import { pageStyle } from './styles';
 
@@ -45,6 +46,11 @@ export default function Activities() {
     const [ rowID, setRowID ] = useState('');
     const [ value, setValue ] = useState<Record<string, string>>(defaultItem);
 
+    const handleAdd = () => {
+        setValue(defaultItem);
+        setOpen(true);
+    }
+    
     const handleEdit = (row: Record<string, string>) => {
         setValue(row);
         setOpen(true);
@@ -60,6 +66,7 @@ export default function Activities() {
     <Box sx={pageStyle}>
         <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
             <Header title='Activities'/>
+            <AddButton onClick={handleAdd}/>
         </Box>
         <BasicTable
             headers={dataHeaders}
