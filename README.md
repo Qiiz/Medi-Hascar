@@ -5,6 +5,7 @@
 - cd frontend
 - npm i
 - npm start
+- open http://localhost:3000/
 
 ## How to run backend
 - Install MySQL Workbench
