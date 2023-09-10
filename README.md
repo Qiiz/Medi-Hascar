@@ -7,6 +7,10 @@
 - npm start
 
 ## How to run backend
+- Install MySQL Workbench
+- Create schema db
+- Create table db.Equipment using `data.csv` in project root folder
+
 - cd backend
 - npm i
 - npm run build
