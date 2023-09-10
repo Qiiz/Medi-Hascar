@@ -36,4 +36,19 @@ export const mainCardStyle = {
         textAlign: 'center', 
         m: 2,
     }
-  }
+}
+
+export const tableCardStyle = {
+    card: {
+        width: 'auto',
+        display: 'inline-block',
+        border: '0px'
+    },
+    font1: {
+        fontSize: 10, 
+        fontWeight: 100, 
+    },
+    font2: {
+        fontSize: 14
+    }
+}
