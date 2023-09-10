@@ -31,7 +31,7 @@ export default function TopBar() {
   return (
     <Grid container sx={{backgroundColor: '#EFEFF0', p: 2, borderRadius: '10px', minWidth: '1000px'}} columns={4}>
         <Grid item xs={1}>
-          <CardMUI title={'Overall Health'} stat={value?.healthyPercentage ?? '0'} variant={mainCardStyle} />
+          <CardMUI title={'Overall Health'} stat={(value?.healthyPercentage ?? '0') + '%'} variant={mainCardStyle} />
         </Grid>
         <Grid item xs={1}>
           <CardMUI title={'Unhealthy'} stat={value?.totalUnhealthy ?? '0'} variant={mainCardStyle} />

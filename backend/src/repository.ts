@@ -84,7 +84,7 @@ class EquipmentRepo implements IEquipmentRepo {
             const insertQuery = `INSERT INTO db.Equipment  
                                 (state, district, facility, category, equip_name, cost, serial_number, 
                                 department, manufacturer, model, price, installation_date, under_warrenty, 
-                                warrenty_date, functionality, status, return_date, borrow_date, cluster) 
+                                functionality, status, return_date, borrow_date, cluster) 
                                 VALUES (
                                     '${equipment.state || ""}',
                                     '${equipment.district || ""}',
@@ -96,16 +96,16 @@ class EquipmentRepo implements IEquipmentRepo {
                                     '${equipment.department || ""}',
                                     '${equipment.manufacturer || ""}',
                                     '${equipment.model || ""}',
-                                    '${equipment.price || ""}',
+                                    ${equipment.price || 0},
                                     '${equipment.installation_date || ""}',
-                                    ${equipment.under_warrenty || 0},
-                                    '${equipment.warrenty_date || ""}',
+                                    '${equipment.under_warrenty || ""}',
                                     '${equipment.functionality || ""}',
                                     '${equipment.status || ""}',
                                     '${equipment.return_date || ""}',
                                     '${equipment.borrow_date || ""}',
-                                    ${equipment.cluster || 0}
-                                )`;
+                                    ${equipment.cluster || 0})`;
+
+            console.log(insertQuery);
     
             // Execute the insert query
             const [result] = await connection.execute(insertQuery);
@@ -171,7 +171,6 @@ class EquipmentRepo implements IEquipmentRepo {
                             price = '${newEquipment.price}',
                             installation_date = '${newEquipment.installation_date}',
                             under_warrenty = '${newEquipment.under_warrenty}',
-                            warrenty_date = '${newEquipment.warrenty_date}',
                             functionality = '${newEquipment.functionality}',
                             status = '${newEquipment.status}',
                             return_date = '${newEquipment.return_date}',

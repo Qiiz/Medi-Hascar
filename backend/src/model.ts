@@ -15,7 +15,6 @@ export interface Equipments extends RowDataPacket {
     price: string;
     installation_date: string;
     under_warrenty: boolean;
-    warrenty_date: string;
     functionality: string;
     status: string;
     return_date: string;

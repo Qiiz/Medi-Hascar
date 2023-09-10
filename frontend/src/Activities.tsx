@@ -14,8 +14,8 @@ const uiHeaderNames: Record<keyof Activity, string> = {
     serial_number: 'S/N', // Primary key
     state: 'State',
     equip_name: 'Name',
-    'Borrow Date': 'Borrow Date',
-    'Return Date': 'Return Date',
+    borrow_date: 'Borrow Date',
+    return_date: 'Return Date',
     status: 'Status'
 }
 
@@ -32,8 +32,8 @@ const defaultItem: Activity = {
     serial_number: '', // Primary key
     state: '',
     equip_name: '',
-    'Borrow Date': '',
-    'Return Date': '',
+    borrow_date: '',
+    return_date: '',
     status: ''
 };
 
@@ -42,8 +42,8 @@ export function createActivityItem(data?: Record<string, string>): Activity {
         serial_number: '',
         state: '',
         equip_name: '',
-        'Borrow Date': '',
-        'Return Date': '',
+        borrow_date: '',
+        return_date: '',
         status: ''
     }
 
@@ -105,7 +105,7 @@ export default function Activities(props: ActivitiesProps) {
     const handleClickEditConfirm = async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
         await editItem(createActivityItem(updatedRow));
-        setOpen(false);
+        setOpenEdit(false);
     }
 
     const handleClickDeleteConfirm = async (rowId: string) => {

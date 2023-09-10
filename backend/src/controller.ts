@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import EquipmentRepo from "./repository.js";
 import Connection from "../db.js"
 import { Equipments } from "./model.js";
-import { MedicalItem, Activity, Forecast, Statistics } from "../../frontend/shared/models.js";
+import { MedicalItem, Activity, Forecast, Statistics } from "../../shared/models.js";
 
 import axios from 'axios';
 
@@ -25,19 +25,20 @@ export default class Controller {
         try {
             const response = await axios.post(apiUrl, responseObj);
             // Handle the response here
-            console.log(response.data);
+            console.log("ML return value: " + response.data);
             return response.data
           } catch (error) {
             // Handle any errors here
-            console.error(error);
+            // console.error(error);
             return null
           }
 
     }
 
     async save(req: Request, res: Response) {
+        console.log(req.body.data);
         const controllerInstance = new Controller(); // Instantiate the Controller class
-        const equipmentInstance: Equipments = req.body
+        const equipmentInstance: Equipments = req.body.data;
 
         const existingEquipment = await EquipmentRepo.retrieveSingle({serial_number: equipmentInstance.serial_number}); // will return an array with one item inside.
         if (existingEquipment.length >0){
@@ -63,8 +64,7 @@ export default class Controller {
             })
             
         } catch (err) {
-            // console.log(err)
-
+            // console.log(err);
             res.status(500).send({
                 message: err
             })
@@ -103,7 +103,7 @@ export default class Controller {
     async updateItem(req: Request, res: Response){
         const controllerInstance = new Controller(); // Instantiate the Controller class
         try {
-            const updatedEquipment: Equipments = req.body
+            const updatedEquipment: Equipments = req.body.data;
             // Get the existing data
             const existingEquipment = await EquipmentRepo.retrieveSingle({serial_number: updatedEquipment.serial_number}); // will return an array with one item inside.
             // existing equipment does not exist
@@ -199,20 +199,22 @@ export default class Controller {
     async getStatistics(req:Request, res:Response){
         try {
             // get all availble items 
-            const totalAvailable = await EquipmentRepo.getAllStatus("Active")
-            const totalUnavailable = await EquipmentRepo.getAllStatus("Inactive")
+            const totalAvailable = await EquipmentRepo.getAllStatus("Available")
+            const totalUnavailable = await EquipmentRepo.getAllStatus("Not Available")
 
             // calculate the overall health
             const nonfunctionalSize = await EquipmentRepo.getAllFunctionality("Approved for Disposal");
-            const functionalSize = await EquipmentRepo.getAllFunctionality("Active in Use");
+            const functionalSize = 0
+                + await EquipmentRepo.getAllFunctionality("Active/in Use")
+                + await EquipmentRepo.getAllFunctionality("Not in Use");
             const totalSize = nonfunctionalSize + functionalSize;
             // calculate the healthy percentage
-            const healthyPercentage = (functionalSize / totalSize) * 100;
+            const healthyPercentage = ((functionalSize / totalSize) * 100).toFixed(2);
 
             // Create a JSON object to hold the variables and their values
             const responseObj: Statistics  = {
                 totalUnhealthy: String(nonfunctionalSize),
-                healtyPercentage: String(healthyPercentage),
+                healthyPercentage: String(healthyPercentage),
                 totalUnAvailable: String(totalUnavailable),
                 totalAvailable: String(totalAvailable)
             };
@@ -236,7 +238,7 @@ export default class Controller {
                     serial_number: item.serial_number,
                     equip_name: item.equip_name,
                     state: item.state,
-                    dateOfInstallation: item.installation_date,
+                    installation_date: item.installation_date,
                     status: item.status,
                     functionality: item.functionality,
                     category: item.category,
@@ -279,7 +281,7 @@ export default class Controller {
 
     async deleteItem(req: Request, res:Response){
         try {
-            const item = req.body
+            const item = req.body.data;
             await EquipmentRepo.deleteSingle(item.serial_number)
             res.status(200).send("Deleted Successfully.")
         } catch (error) {
