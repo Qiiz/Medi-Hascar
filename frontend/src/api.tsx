@@ -1,32 +1,19 @@
 import axios from 'axios';
-import { MedicalItem } from '../shared/models'
+import { Forecast, Statistics } from '../../shared/models';
 
-export function createRecord(data: object) {
-    const result: Record<string, string> = {}
+export function createRecord<T extends object>(data: T, prettyPropNames: Record<keyof T, string>) {
+    const result: Record<string, string> = {};
     Object.entries(data).forEach(([k, v]) => {
-        result[k] = String(v);
-    })
+        if (k in prettyPropNames) {
+            result[prettyPropNames[k as keyof T]] = String(v);
+        }
+    });
     return result;
 }
 
-export function createMedicalItem(data: Record<string, string>): MedicalItem {
-    const result: MedicalItem = {
-        serial_number: data.serial_number,
-        equip_name: data.equip_name,
-        state: data.state,
-        dateOfInstallation: data.dateOfInstallation,
-        status: data.status,
-        functionality: data.functionality,
-        category: data.category,
-        cost: parseInt(data.cost, 0),
-        under_warrenty: Boolean(data.under_warrenty)
-    }
-    return result;
-}
-
-export async function fetchMedicalItems() {
+export async function fetchItems<T extends object[]>() {
     try {
-        const { data, status } = await axios.get<MedicalItem[]>('http://localhost:8000.com/medical-items');
+        const { data, status } = await axios.get<T>('http://localhost:8000/medical-items');
         console.log('Fetch Medical Items Status: ' , status);
         return data;
     } catch (error) {
@@ -37,12 +24,11 @@ export async function fetchMedicalItems() {
         }
         return [];
     }
-   
 }
 
-export async function addMedicalItem(item: MedicalItem) {
+export async function addItem<T extends object>(item: T) {
     try {
-        const { data , status } = await axios.post('http://localhost:8000.com/item/add', { item });
+        const { data , status } = await axios.post<T>('http://localhost:8000/medical-items/add', { item });
         console.log('Add Medical Items Status: ' , status);
 
     } catch (error) {
@@ -54,9 +40,23 @@ export async function addMedicalItem(item: MedicalItem) {
     }
 }
 
-export async function deleteMedicalItem(idValue: string) {
+export async function editItem<T extends object>(item: T) {
     try {
-        const { data , status } = await axios.post('http://localhost:8000.com/item/delete', { serial_number: idValue } );
+        const { data , status } = await axios.post<T>('http://localhost:8000/item/edit', { item });
+        console.log('Edit Medical Items Status: ' , status);
+
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log('error message: ', error.message);
+        } else {
+          console.log('unexpected error: ', error);
+        }
+    }
+}
+
+export async function deleteItem(idValue: string) {
+    try {
+        const { data , status } = await axios.post('http://localhost:8000/item/delete', { serial_number: idValue } );
         console.log('Delete Medical Items Status: ' , status);
 
     } catch (error) {
@@ -65,5 +65,37 @@ export async function deleteMedicalItem(idValue: string) {
         } else {
           console.log('unexpected error: ', error);
         }
+    }
+}
+
+export async function fetchForecast(): Promise<Forecast[]> {
+    try {
+        const { data, status } = await axios.get<Forecast[]>('http://localhost:8000/forecast');
+        console.log('Fetch Forecast Status: ' , status);
+
+        return data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log('error message: ', error.message);
+        } else {
+          console.log('unexpected error: ', error);
+        }
+        return [];
+    }
+}
+
+export async function fetchStatistics(): Promise<Statistics | undefined> {
+    try {
+        const { data, status } = await axios.get<Statistics>('http://localhost:8000/statistics');
+        console.log('Fetch Stats Status: ' , status);
+
+        return data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log('error message: ', error.message);
+        } else {
+          console.log('unexpected error: ', error);
+        }
+        return undefined;
     }
 }

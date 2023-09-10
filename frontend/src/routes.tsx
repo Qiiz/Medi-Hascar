@@ -1,9 +1,11 @@
 import { Article, BarChart, Home, People } from '@mui/icons-material';
 import { ReactElement } from 'react';
 import Activities from './Activities';
-import Forecast from './Forecast';
+import Forecast from './Forecasts';
 import Main from './Main';
 import MedicalItems from './MedicalItems';
+import Page from './Page';
+import { headerStyle1 } from './styles';
 
 export interface RouteData {
   route: string,
@@ -17,25 +19,25 @@ const routes: RouteData[] = [
     route: '/',
     name: 'Home',
     icon: <Home />,
-    page: <Main />
+    page: <Page><Main /></Page>
   },
   {
     route: '/medical-items',
     name: 'Medical Items',
     icon: <BarChart />,
-    page: <MedicalItems />
+    page: <Page><MedicalItems headerStyle={headerStyle1} isEditable isCollapsible /></Page>
   },
   {
     route: '/forecast',
     name: 'Forecast',
     icon: <Article />,
-    page: <Forecast />
+    page: <Page><Forecast headerStyle={headerStyle1} /></Page>
   },
   {
     route: '/activities',
     name: 'Activities',
     icon: <People />,
-    page: <Activities />
+    page: <Page><Activities headerStyle={headerStyle1} isEditable /></Page>
   },
 ]
 

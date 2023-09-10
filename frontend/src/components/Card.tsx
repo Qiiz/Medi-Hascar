@@ -14,7 +14,7 @@ export interface CardMUIStyle {
 export interface CardMUIProps {
     variant: CardMUIStyle,
     title: string,
-    stat: string,
+    stat?: string,
 }
 
 export default function CardMUI(props: CardMUIProps) {
@@ -25,7 +25,7 @@ export default function CardMUI(props: CardMUIProps) {
                     {props.title}
                 </Typography>
                 <Typography sx={props.variant.font2}>
-                    {props.stat}
+                    {props.stat ?? ''}
                 </Typography>
             </CardContent>
         </Card>

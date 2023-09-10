@@ -53,7 +53,7 @@ export default function Row( props: RowProps ) {
         <>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>    
                 {Object.entries(props.visibleData).map(([key, value]) => (
-                    <TableCell align='left'>{value}</TableCell>
+                    <TableCell key={key} align='left'>{value}</TableCell>
                 ))}
                 {props.isEditable && (<>
                     <TableCell>
@@ -77,7 +77,7 @@ export default function Row( props: RowProps ) {
                         <Collapse in={open} timeout='auto' unmountOnExit>
                             <Box>
                                 {Object.entries(props.hiddenData).map(([key, value]) => (
-                                    <CardMUI title={key} stat={value} variant={tableCardStyle}/>   
+                                    <CardMUI key={key} title={key} stat={value} variant={tableCardStyle}/>   
                                 ))} 
                             </Box>
                         </Collapse>

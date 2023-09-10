@@ -1,27 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-    Box,
+    Box, SxProps,
   } from '@mui/material';
 import Header from './components/common/Header';
 import AddButton from './components/common/AddButton';
 import BasicTable from './components/common/BasicTable';
 import ItemDialog from './components/common/ItemDialog';
 import DeleteDialog from './components/DeleteDialog';
-import { pageStyle } from './styles';
+import { fetchItems, addItem, deleteItem, editItem, createRecord } from './api';
+import { Activity } from '../../shared/models';
 
-const dataRows = [
-    {
-        'Category': 'Medical',
-        '1': 'Medical',
-        '2': 'Medical',
-        '3': 'Medical',
-        '4': 'Medical',
-        '5': 'Medical',
-    }
+const uiHeaderNames: Record<keyof Activity, string> = {
+    serial_number: 'S/N', // Primary key
+    state: 'State',
+    equip_name: 'Name',
+    'Borrow Date': 'Borrow Date',
+    'Return Date': 'Return Date',
+    status: 'Status'
+}
 
-]
-
-const dataHeaders = [
+const headers = [
     'S/N',
     'Name',
     'State',
@@ -30,32 +28,54 @@ const dataHeaders = [
     'Status'
 ]
 
-const defaultItem: Record<string, string> = {
-    'S/N': 'goat',
-    'Name': 'goat',
-    'State': 'goat',
-    'Installation Date': 'goat',
-    'Status': 'goat',
-    'Functional': 'goat',
-    'Category': 'goat',
-    'Cost': 'goat',
-    'Under Warranty': 'goat',
+const defaultItem: Activity = {
+    serial_number: '', // Primary key
+    state: '',
+    equip_name: '',
+    'Borrow Date': '',
+    'Return Date': '',
+    status: ''
 };
 
-export default function Activities() {
+export function createActivityItem(data?: Record<string, string>): Activity {
+    const result: Activity = {
+        serial_number: '',
+        state: '',
+        equip_name: '',
+        'Borrow Date': '',
+        'Return Date': '',
+        status: ''
+    }
+
+    if (!data) {
+        return result;
+    }
+    
+    return result;
+}
+
+export interface ActivitiesProps {
+    headerStyle: SxProps,
+    isEditable?: boolean,
+    isCollapsible?: boolean
+}
+
+export default function Activities(props: ActivitiesProps) {
     const [ open, setOpen ] = useState(false);
+    const [ openEdit, setOpenEdit ] = useState(false);
     const [ openDelete, setOpenDelete ] = useState(false);
+    const [ rows, setRows ] = useState<Record<string, string>[]>([]);
     const [ rowID, setRowID ] = useState('');
-    const [ value, setValue ] = useState<Record<string, string>>(defaultItem);
+    const [ value, setValue ] = useState<Record<string, string>>(createRecord(defaultItem, uiHeaderNames));
 
     const handleAdd = () => {
-        setValue(defaultItem);
+        setValue(createRecord(defaultItem, uiHeaderNames));
         setOpen(true);
     }
 
     const handleEdit = (row: Record<string, string>) => {
         setValue(row);
-        setOpen(true);
+        setOpenEdit(true);
     }
 
     const handleDelete = (rowId: string) => {
@@ -68,40 +88,65 @@ export default function Activities() {
         setOpen(false);
     }
 
+    const handleClickEditClose = () => {
+        setOpenEdit(false);
+    }
+
     const handleClickDeleteClose = () => {
         setOpenDelete(false);
     }
 
-    const handleClickConfirm = (updatedRow: Record<string, string>) => {
+    const handleClickConfirm = async (updatedRow: Record<string, string>) => {
         console.log(updatedRow);
+        await addItem(createActivityItem(updatedRow));
         setOpen(false);
     }
 
-    const handleClickDeleteConfirm = (rowId: string) => {
+    const handleClickEditConfirm = async (updatedRow: Record<string, string>) => {
+        console.log(updatedRow);
+        await editItem(createActivityItem(updatedRow));
+        setOpen(false);
+    }
+
+    const handleClickDeleteConfirm = async (rowId: string) => {
         console.log(rowId);
+        await deleteItem(rowId);
         setOpenDelete(false);
     }
 
+    useEffect(() => {
+        fetchItems<Activity[]>().then(result => {
+            setRows(result.map(data => createRecord(data, uiHeaderNames)));
+        });
+    }, []);
+
   return (
-    <Box sx={pageStyle}>
+    <>
         <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Header title='Activities'/>
+            <Header title='Activities' sx={props.headerStyle}/>
             <AddButton onClick={handleAdd}/>
         </Box>
         <BasicTable
-            headers={dataHeaders}
-            rows={dataRows}
-            isEditable={true}
-            isCollapsible={false}
+            headers={headers}
+            rows={rows}
+            isEditable={props.isEditable ?? false}
+            isCollapsible={props.isCollapsible ?? false}
             onEditRow={handleEdit}
             onDeleteRow={handleDelete}
         />
         <ItemDialog
             open={open}
-            title="TITLE"
+            title="Add a new Activity"
             value={value}
             onClose={handleClickClose}
             onConfirm={handleClickConfirm}
+        />
+        <ItemDialog
+            open={openEdit}
+            title="Edit an Activity"
+            value={value}
+            onClose={handleClickEditClose}
+            onConfirm={handleClickEditConfirm}
         />
         <DeleteDialog 
             open={openDelete}
@@ -109,6 +154,6 @@ export default function Activities() {
             onClose={handleClickDeleteClose}
             onDelete={handleClickDeleteConfirm}
         />
-    </Box>  
+    </>  
   );
 }
